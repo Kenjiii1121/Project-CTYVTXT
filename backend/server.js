@@ -1,5 +1,6 @@
 const path = require('path');
 const os = require('os');
+const fs = require('fs');
 
 try { process.loadEnvFile(path.join(__dirname, '.env')); } catch { /* .env is optional on cloud */ }
 
@@ -37,8 +38,10 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
-  throw new Error('Thieu SESSION_SECRET trong moi truong production');
+if (!process.env.SESSION_SECRET) {
+  console.warn('>> CANH BAO: chua dat SESSION_SECRET. Dang dung khoa tam thoi -'
+    + ' admin se bi dang xuat moi lan server khoi dong lai.'
+    + ' Hay dat bien moi truong SESSION_SECRET de on dinh.');
 }
 
 app.use(session({
@@ -107,7 +110,12 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(path.join(__dirname, '..'), { dotfiles: 'deny' }));
+const siteRoot = path.join(__dirname, '..');
+if (!fs.existsSync(path.join(siteRoot, 'index.html'))) {
+  console.warn('>> CANH BAO: khong tim thay index.html tai', siteRoot,
+    '- trang chu se bao "Not Found". Kiem tra cau truc deploy (phai dua ca repo, khong chi rieng thu muc backend).');
+}
+app.use(express.static(siteRoot, { dotfiles: 'deny' }));
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
 function requireAuth(req, res, next) {

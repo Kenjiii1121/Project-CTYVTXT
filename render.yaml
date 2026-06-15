@@ -14,11 +14,11 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: DATABASE_URL      # chuoi ket noi Supabase (pooler URI, port 6543)
+      - key: SESSION_SECRET    # Render tu sinh chuoi ngau nhien, on dinh qua cac lan deploy
+        generateValue: true
+      - key: DATABASE_URL      # BAT BUOC nhap tay: chuoi ket noi Supabase (pooler URI, port 6543)
         sync: false
-      - key: SESSION_SECRET    # chuoi ngau nhien dai >= 32 ky tu
-        sync: false
-      - key: GMAIL_USER
+      - key: GMAIL_USER        # tuy chon: de bat email thong bao don moi
         sync: false
       - key: GMAIL_APP_PASSWORD
         sync: false
