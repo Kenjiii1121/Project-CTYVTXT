@@ -111,6 +111,14 @@ async function initDb() {
     CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings(created_at);
     CREATE INDEX IF NOT EXISTS idx_trips_booking_id ON trips(booking_id);
     CREATE INDEX IF NOT EXISTS idx_trips_vehicle_id ON trips(vehicle_id);
+
+    -- Bang luu phien dang nhap (connect-pg-simple)
+    CREATE TABLE IF NOT EXISTS "session" (
+      "sid" VARCHAR NOT NULL PRIMARY KEY,
+      "sess" JSON NOT NULL,
+      "expire" TIMESTAMP(6) NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire");
   `);
 
   const adminCount = await get('SELECT COUNT(*)::int AS c FROM admins');

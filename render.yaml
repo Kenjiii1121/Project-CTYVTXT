@@ -1,0 +1,28 @@
+# Cau hinh deploy cho Render (https://render.com)
+# Khi tao service moi, chon "Blueprint" va tro toi repo nay -> Render doc file nay.
+# Cac bien danh dau sync:false PHAI nhap tay trong dashboard (khong commit vao repo).
+services:
+  - type: web
+    name: van-tai-xuan-truong
+    runtime: node
+    plan: free
+    rootDir: backend          # chay npm trong /backend; server tu phuc vu site tinh o thu muc cha
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL      # chuoi ket noi Supabase (pooler URI, port 6543)
+        sync: false
+      - key: SESSION_SECRET    # chuoi ngau nhien dai >= 32 ky tu
+        sync: false
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: NOTIFY_TO
+        sync: false
+      # - key: ALLOWED_ORIGINS  # chi can neu host frontend o domain khac
+      #   sync: false

@@ -5,8 +5,11 @@ try { process.loadEnvFile(path.join(__dirname, '.env')); } catch { /* .env is op
 
 const express = require('express');
 const session = require('express-session');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const pgSession = require('connect-pg-simple')(session);
 const crypto = require('crypto');
-const { get, query, run, withTransaction, initDb, hashPassword, verifyPassword } = require('./db');
+const { pool, get, query, run, withTransaction, initDb, hashPassword, verifyPassword } = require('./db');
 const { sendBookingEmail } = require('./mailer');
 
 const app = express();
@@ -26,10 +29,20 @@ function asyncHandler(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
 
+// Security headers. Tat CSP vi cac trang dung inline script/handler + CDN font-awesome
+// + iframe Google Maps; bat CSP se vo giao dien. Cac header con lai (X-Frame-Options,
+// nosniff, HSTS...) van duoc bat.
+app.use(helmet({ contentSecurityPolicy: false }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+  throw new Error('Thieu SESSION_SECRET trong moi truong production');
+}
+
 app.use(session({
+  store: new pgSession({ pool, tableName: 'session', createTableIfMissing: false }),
   secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
   resave: false,
   saveUninitialized: false,
@@ -41,20 +54,60 @@ app.use(session({
   }
 }));
 
+// CORS: chi cho phep cac domain khai bao trong ALLOWED_ORIGINS (cach nhau dau phay).
+// Mac dinh (khong khai bao) => khong gui header CORS => chi chap nhan request cung
+// domain. Khong bao gio phan chieu mot Origin la khi kem Allow-Credentials.
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  }
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
+});
+
+// Chong do mat khau: toi da 10 lan dang nhap sai / 15 phut / IP.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Thu qua nhieu lan. Vui long doi 15 phut roi thu lai.' }
+});
+
+// Chong spam form dat xe: toi da 8 don / gio / IP.
+const bookingLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Ban da gui qua nhieu yeu cau. Vui long thu lai sau hoac goi hotline.' }
 });
 
 app.get('/healthz', (req, res) => {
   res.json({ ok: true, uptime: process.uptime() });
 });
 
-app.use(express.static(path.join(__dirname, '..')));
+// Chan truy cap web vao thu muc backend (source code, log, data.db cu...)
+// Chi /admin (mount rieng ben duoi) va /api moi duoc phep cham vao backend.
+app.use((req, res, next) => {
+  if (req.path === '/backend' || req.path.startsWith('/backend/')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  next();
+});
+
+app.use(express.static(path.join(__dirname, '..'), { dotfiles: 'deny' }));
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
 function requireAuth(req, res, next) {
@@ -69,7 +122,7 @@ const requireOwner = asyncHandler(async (req, res, next) => {
   next();
 });
 
-app.post('/api/login', asyncHandler(async (req, res) => {
+app.post('/api/login', loginLimiter, asyncHandler(async (req, res) => {
   const { username, password } = req.body || {};
   const admin = await get('SELECT * FROM admins WHERE username = $1', [username || '']);
   if (!admin || !verifyPassword(password || '', admin.salt, admin.password_hash)) {
@@ -107,7 +160,7 @@ app.post('/api/change-password', requireAuth, asyncHandler(async (req, res) => {
   res.json({ ok: true });
 }));
 
-app.post('/api/bookings', asyncHandler(async (req, res) => {
+app.post('/api/bookings', bookingLimiter, asyncHandler(async (req, res) => {
   const b = req.body || {};
   if (!b.ho_ten || !b.dien_thoai || !b.diem_lay_hang || !b.diem_giao_hang) {
     return res.status(400).json({ error: 'Thieu thong tin bat buoc' });
