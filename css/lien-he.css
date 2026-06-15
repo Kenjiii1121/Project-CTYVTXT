@@ -1,0 +1,128 @@
+/* PAGE HERO: dùng chung từ pages.css */
+
+/* CONTACT LAYOUT */
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* FORM */
+.contact-form-box {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 36px;
+  box-shadow: var(--shadow);
+}
+.contact-form-box h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--primary);
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.form-group { margin-bottom: 18px; }
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 6px;
+}
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px; /* >=16px để iOS không tự phóng to khi chạm vào ô nhập */
+  font-family: inherit;
+  transition: var(--transition);
+  outline: none;
+  color: #333;
+  min-height: 44px;
+}
+.form-group input:focus,
+.form-group textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(232,93,4,0.1); }
+.form-group textarea { resize: vertical; }
+
+.success-msg {
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: #ecfdf5;
+  border: 1.5px solid #10b981;
+  border-radius: 10px;
+  color: #065f46;
+  font-weight: 600;
+  font-size: 15px;
+}
+.success-msg i { font-size: 28px; color: #10b981; }
+
+/* INFO BOX */
+.contact-info-box {
+  position: sticky;
+  top: 90px;
+}
+.contact-info-box h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--primary);
+}
+
+.info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 14px;
+  transition: var(--transition);
+}
+.info-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+.info-card i {
+  width: 44px;
+  height: 44px;
+  background: rgba(232,93,4,0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.info-card h4 { font-size: 13px; color: var(--gray); font-weight: 600; margin-bottom: 4px; }
+.info-card a, .info-card p { font-size: 15px; color: var(--dark); font-weight: 500; line-height: 1.6; }
+.info-card a:hover { color: var(--primary); }
+
+.map-placeholder {
+  margin-top: 20px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  border: 2px dashed #d1d5db;
+  padding: 32px;
+  text-align: center;
+  color: var(--gray);
+}
+.map-placeholder i { font-size: 40px; margin-bottom: 12px; color: #9ca3af; }
+.map-placeholder p { font-weight: 600; margin-bottom: 6px; }
+.map-placeholder small { font-size: 12px; }
+
+@media (max-width: 900px) {
+  .contact-layout { grid-template-columns: 1fr; }
+  .contact-info-box { position: static; }
+}
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .contact-form-box { padding: 24px 18px; }
+}

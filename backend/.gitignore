@@ -1,0 +1,14 @@
+# Bí mật — KHÔNG BAO GIỜ đẩy lên GitHub
+.env
+
+# Thư viện cài lại được bằng npm install
+node_modules/
+
+# Database chứa dữ liệu khách hàng thật
+data.db
+data.db-shm
+data.db-wal
+
+# Log, file tạm
+*.log
+npm-debug.log*

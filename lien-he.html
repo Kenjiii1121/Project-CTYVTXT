@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Liên hệ Vận tải Xuân Trường - Hotline 0917 009 899. Gửi yêu cầu báo giá vận chuyển hàng hóa, hỗ trợ 24/7." />
+  <title>Liên Hệ – Vận Tải Xuân Trường</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/pages.css" />
+  <link rel="stylesheet" href="css/lien-he.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <header class="header">
+    <div class="container header-inner">
+      <div class="logo">
+        <span class="logo-icon"><i class="fas fa-truck"></i></span>
+        <div>
+          <span class="logo-name">Xuân Trường</span>
+          <span class="logo-sub">Vận Tải</span>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <a href="index.html">Trang chủ</a>
+        <a href="dich-vu.html">Dịch vụ</a>
+        <a href="doi-xe.html">Đội xe</a>
+        <a href="lien-he.html" class="active">Liên hệ</a>
+      </nav>
+      <a href="lien-he.html" class="btn btn-primary header-cta">Đặt xe ngay</a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menu"><i class="fas fa-bars"></i></button>
+    </div>
+  </header>
+
+  <!-- PAGE HEADER -->
+  <section class="page-hero">
+    <div class="container">
+      <h1>Liên Hệ & Đặt Xe</h1>
+      <p>Chúng tôi sẵn sàng hỗ trợ bạn 24/7</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container contact-layout">
+
+      <!-- FORM -->
+      <div class="contact-form-box">
+        <h2>Gửi yêu cầu báo giá</h2>
+        <form id="contactForm" action="https://formspree.io/f/mnjygqzy" method="POST" onsubmit="handleSubmit(event)">
+          <input type="hidden" name="_subject" value="Yêu cầu báo giá mới từ website Vận tải Xuân Trường" />
+          <div class="form-row">
+            <div class="form-group">
+              <label for="hoTen">Họ và tên *</label>
+              <input id="hoTen" name="ho_ten" type="text" placeholder="Nguyễn Văn A" autocomplete="name" required />
+            </div>
+            <div class="form-group">
+              <label for="dienThoai">Số điện thoại *</label>
+              <input id="dienThoai" name="dien_thoai" type="tel" inputmode="tel" placeholder="09xx xxx xxx" autocomplete="tel" pattern="(0|\+84)[0-9]{9}" title="Nhập số điện thoại Việt Nam hợp lệ (10 số, bắt đầu bằng 0)" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" inputmode="email" placeholder="email@example.com" autocomplete="email" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="diemDi">Điểm lấy hàng *</label>
+              <input id="diemDi" name="diem_lay_hang" type="text" placeholder="Địa chỉ lấy hàng" required />
+            </div>
+            <div class="form-group">
+              <label for="diemDen">Điểm giao hàng *</label>
+              <input id="diemDen" name="diem_giao_hang" type="text" placeholder="Địa chỉ giao hàng" required />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="loaiHang">Loại hàng hóa</label>
+              <input id="loaiHang" name="loai_hang" type="text" placeholder="Thực phẩm, thiết bị, vật liệu..." />
+            </div>
+            <div class="form-group">
+              <label for="trongLuong">Trọng lượng (tấn)</label>
+              <input id="trongLuong" name="trong_luong" type="number" inputmode="decimal" placeholder="Ví dụ: 5" min="0" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ghiChu">Ghi chú thêm</label>
+            <textarea id="ghiChu" name="ghi_chu" rows="4" placeholder="Yêu cầu đặc biệt, thời gian cần giao..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">
+            <i class="fas fa-paper-plane"></i> Gửi yêu cầu
+          </button>
+        </form>
+        <div id="successMsg" style="display:none;" class="success-msg">
+          <i class="fas fa-check-circle"></i> Yêu cầu đã được gửi! Chúng tôi sẽ liên hệ lại trong 30 phút.
+        </div>
+      </div>
+
+      <!-- THÔNG TIN LIÊN HỆ -->
+      <div class="contact-info-box">
+        <h2>Thông tin liên hệ</h2>
+        <div class="info-card">
+          <i class="fas fa-phone"></i>
+          <div>
+            <h4>Hotline 24/7</h4>
+            <a href="tel:0917009899">0917 009 899</a><br/>
+            <a href="tel:0909876543">0909 876 543</a>
+          </div>
+        </div>
+        <div class="info-card">
+          <i class="fas fa-envelope"></i>
+          <div>
+            <h4>Email</h4>
+            <a href="mailto:ngothanh0918@gmail.com">ngothanh0918@gmail.com</a>
+          </div>
+        </div>
+        <div class="info-card">
+          <i class="fas fa-map-marker-alt"></i>
+          <div>
+            <h4>Địa chỉ văn phòng</h4>
+            <p>52 Đường Trần Văn Ơn,<br/>Phú Lợi, TP. HCM</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <i class="fas fa-clock"></i>
+          <div>
+            <h4>Giờ làm việc</h4>
+          <p>24/7 – Tất cả các ngày trong năm-"trừ các dịp lễ tết"</p>
+          </div>
+        </div>
+
+        <!-- GOOGLE MAPS -->
+        <div class="map-embed">
+          <iframe
+            src="https://maps.google.com/maps?q=10.9743518,106.6755237&z=16&output=embed"
+            width="100%" height="280" style="border:0; border-radius:10px; display:block;"
+            allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+            title="Bản đồ 52 Đường Trần Văn Ơn, Phú Lợi, TP. HCM">
+          </iframe>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <h3><i class="fas fa-truck"></i> Xuân Trường</h3>
+        <p>Công ty Vận tải Xuân Trường - Uy tín, chuyên nghiệp, an toàn.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Dịch vụ</h4>
+        <ul>
+          <li><a href="dich-vu.html">Vận chuyển hàng lẻ</a></li>
+          <li><a href="dich-vu.html">Vận chuyển nguyên xe</a></li>
+          <li><a href="dich-vu.html">Xe đông lạnh</a></li>
+          <li><a href="dich-vu.html">Vận chuyển công trình</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Liên kết</h4>
+        <ul>
+          <li><a href="index.html">Trang chủ</a></li>
+          <li><a href="doi-xe.html">Đội xe</a></li>
+          <li><a href="lien-he.html">Liên hệ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Liên hệ</h4>
+        <ul class="contact-info">
+          <li><i class="fas fa-map-marker-alt"></i> 52 Đường Trần Văn Ơn, Phú Lợi, TP. HCM</li>
+          <li><i class="fas fa-phone"></i> <a href="tel:0917009899">0917 009 899</a></li>
+          <li><i class="fas fa-envelope"></i> <a href="mailto:ngothanh0918@gmail.com">ngothanh0918@gmail.com</a></li>
+          <li><i class="fas fa-clock"></i> 24/7 tất cả các ngày</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2018 Công ty Vận tải Xuân Trường. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const form = document.getElementById('contactForm');
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang gửi...';
+
+      // Gửi song song: Formspree (nhận email) + backend (lưu vào hệ thống quản lý)
+      const formData = new FormData(form);
+      const jsonData = Object.fromEntries(formData.entries());
+
+      const sendFormspree = fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      });
+      const sendBackend = fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(jsonData)
+      }).catch(() => null); // không có backend (hosting tĩnh) thì bỏ qua
+
+      try {
+        const [resFormspree, resBackend] = await Promise.all([sendFormspree.catch(() => null), sendBackend]);
+        const ok = (resFormspree && resFormspree.ok) || (resBackend && resBackend.ok);
+        if (!ok) throw new Error('Gửi thất bại');
+        form.style.display = 'none';
+        document.getElementById('successMsg').style.display = 'flex';
+      } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi yêu cầu';
+        alert('Không gửi được yêu cầu. Vui lòng thử lại hoặc gọi hotline 0917 009 899.');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+/* PAGE HERO (dùng chung cho dich-vu, doi-xe) */
+.page-hero {
+  background: linear-gradient(135deg, var(--dark), var(--dark2));
+  padding: 60px 0;
+  text-align: center;
+  color: var(--white);
+}
+.page-hero h1 { font-size: 36px; font-weight: 800; margin-bottom: 10px; }
+.page-hero p { font-size: 17px; opacity: 0.8; }
+
+/* ===== DỊCH VỤ DETAIL ===== */
+.service-list { display: flex; flex-direction: column; gap: 32px; }
+
+.service-detail-card {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 32px;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 36px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--primary);
+  transition: var(--transition);
+}
+.service-detail-card:hover { transform: translateX(4px); box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+
+.service-detail-icon {
+  width: 80px;
+  height: 80px;
+  background: rgba(232,93,4,0.12);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+.service-detail-icon.orange2 { background: rgba(251,146,60,0.12); color: #f97316; }
+.service-detail-icon.blue { background: rgba(59,130,246,0.12); color: #3b82f6; }
+.service-detail-icon.green { background: rgba(34,197,94,0.12); color: #22c55e; }
+
+.service-detail-content h2 { font-size: 22px; font-weight: 800; color: var(--dark); margin-bottom: 12px; }
+.service-detail-content p { color: var(--gray); margin-bottom: 20px; line-height: 1.7; }
+
+.service-features { margin-bottom: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.service-features li { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #374151; }
+.service-features li i { color: #22c55e; font-size: 13px; flex-shrink: 0; }
+
+/* BẢNG GIÁ */
+.price-table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+.price-table { width: 100%; border-collapse: collapse; background: var(--white); }
+.price-table th {
+  background: var(--primary);
+  color: var(--white);
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 700;
+}
+.price-table td { padding: 14px 20px; font-size: 14px; border-bottom: 1px solid #f3f4f6; color: #374151; }
+.price-table tr:hover td { background: rgba(232,93,4,0.04); }
+.price-table tr:last-child td { border-bottom: none; }
+
+/* ===== ĐỘI XE ===== */
+.fleet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.fleet-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+.fleet-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.14); }
+
+.fleet-card-img {
+  height: 200px;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  color: rgba(255,255,255,0.15);
+  position: relative;
+  overflow: hidden;
+}
+.fleet-card-img i { position: relative; z-index: 1; }
+.fleet-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+.fleet-card:hover .fleet-card-img img { transform: scale(1.06); }
+.fleet-card-img::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 60px;
+  background: linear-gradient(transparent, rgba(232,93,4,0.3));
+}
+
+.fleet-card-badge {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: var(--primary);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.fleet-card-body { padding: 22px; }
+.fleet-card-body h3 { font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 14px; }
+
+.fleet-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+.spec-item { display: flex; flex-direction: column; gap: 2px; }
+.spec-label { font-size: 11px; color: var(--gray); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.spec-value { font-size: 14px; font-weight: 700; color: var(--dark); }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .service-detail-card { grid-template-columns: 1fr; }
+  .service-detail-icon { width: 60px; height: 60px; font-size: 26px; }
+  .service-features { grid-template-columns: 1fr; }
+}

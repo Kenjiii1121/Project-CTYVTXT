@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập – Quản trị Vận tải Xuân Trường</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+    }
+    .login-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 40px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .login-box h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 6px; text-align: center; }
+    .login-box .sub { text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 28px; }
+    label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 16px;
+      margin-bottom: 16px;
+      outline: none;
+    }
+    input:focus { border-color: #e85d04; box-shadow: 0 0 0 3px rgba(232,93,4,0.12); }
+    button {
+      width: 100%;
+      padding: 13px;
+      background: #e85d04;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:hover { background: #c44d03; }
+    .error { color: #dc2626; font-size: 14px; text-align: center; margin-bottom: 12px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h1>🚚 Vận Tải Xuân Trường</h1>
+    <p class="sub">Đăng nhập trang quản trị</p>
+    <p class="error" id="error"></p>
+    <form id="loginForm">
+      <label for="username">Tên đăng nhập</label>
+      <input id="username" type="text" autocomplete="username" required />
+      <label for="password">Mật khẩu</label>
+      <input id="password" type="password" autocomplete="current-password" required />
+      <button type="submit">Đăng nhập</button>
+    </form>
+  </div>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: document.getElementById('username').value,
+          password: document.getElementById('password').value
+        })
+      });
+      if (res.ok) {
+        location.href = '/admin/';
+      } else {
+        const err = document.getElementById('error');
+        err.textContent = (await res.json()).error || 'Đăng nhập thất bại';
+        err.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản trị – Vận Tải Xuân Trường</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚚</text></svg>" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #e85d04; --primary-dark: #c44d03; --dark: #1a1a2e; --dark2: #16213e;
+      --gray: #6b7280; --light: #f9fafb; --border: #e5e7eb;
+      --blue: #3b82f6; --green: #22c55e; --amber: #f59e0b; --red: #ef4444;
+    }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #eef1f6; color: #374151; }
+
+    /* SIDEBAR + LAYOUT */
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 230px; background: linear-gradient(180deg, var(--dark), var(--dark2));
+      color: #fff; position: fixed; top: 0; bottom: 0; left: 0; z-index: 20;
+      display: flex; flex-direction: column; transition: transform 0.25s;
+    }
+    .sidebar .brand { padding: 22px 20px; font-size: 17px; font-weight: 800; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar .brand span { color: var(--primary); }
+    .sidebar nav { padding: 12px; flex: 1; }
+    .sidebar nav button {
+      width: 100%; display: flex; align-items: center; gap: 12px; background: none; border: none;
+      color: rgba(255,255,255,0.75); padding: 12px 14px; border-radius: 10px; font-size: 14.5px;
+      font-weight: 500; cursor: pointer; text-align: left; margin-bottom: 3px; position: relative; transition: 0.2s;
+    }
+    .sidebar nav button i { width: 20px; text-align: center; font-size: 15px; }
+    .sidebar nav button:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .sidebar nav button.active { background: var(--primary); color: #fff; }
+    .sidebar nav button .dot {
+      position: absolute; right: 12px; min-width: 20px; height: 20px; padding: 0 6px; background: var(--red);
+      border-radius: 12px; font-size: 11px; font-weight: 700; display: none; align-items: center; justify-content: center;
+    }
+    .sidebar nav button .dot.show { display: flex; }
+    .sidebar .foot { padding: 14px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; color: rgba(255,255,255,0.5); }
+
+    .main { flex: 1; margin-left: 230px; min-width: 0; }
+    .topbar {
+      background: #fff; height: 60px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; position: sticky; top: 0; z-index: 15; box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+    }
+    .topbar .hamburger { display: none; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--dark); }
+    .topbar .who { font-size: 14px; color: var(--gray); }
+    .topbar .who b { color: var(--dark); }
+    .topbar .t-actions { display: flex; gap: 8px; align-items: center; }
+    .topbar .t-actions button {
+      background: var(--light); border: 1px solid var(--border); color: var(--gray);
+      padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px;
+    }
+    .topbar .t-actions button:hover { border-color: var(--primary); color: var(--primary); }
+
+    .content { padding: 24px; max-width: 1200px; }
+
+    /* STATS */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .stat-card { background: #fff; border-radius: 14px; padding: 18px; border: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+    .stat-card .ic { width: 46px; height: 46px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 19px; color: #fff; flex-shrink: 0; }
+    .stat-card .num { font-size: 24px; font-weight: 800; color: var(--dark); line-height: 1.1; }
+    .stat-card .lbl { font-size: 12.5px; color: var(--gray); margin-top: 2px; }
+
+    .panel { background: #fff; border-radius: 14px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 22px; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .panel-head h2 { font-size: 15.5px; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+    .panel-head h2 i { color: var(--primary); }
+    .btn { border: none; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-soft { background: var(--light); color: var(--gray); border: 1px solid var(--border); }
+    .btn-soft:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* TOOLBAR (search/filter) */
+    .toolbar { display: flex; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap; align-items: center; }
+    .toolbar .search { flex: 1; min-width: 180px; position: relative; }
+    .toolbar .search i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray); font-size: 13px; }
+    .toolbar input, .toolbar select { padding: 9px 12px 9px 34px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
+    .toolbar select { padding-left: 12px; cursor: pointer; }
+    .toolbar input:focus, .toolbar select:focus { border-color: var(--primary); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    th { background: var(--light); text-align: left; padding: 11px 14px; font-size: 11.5px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }
+    td { padding: 12px 14px; border-top: 1px solid var(--border); vertical-align: top; }
+    tr:hover td { background: #fffaf5; }
+    .table-wrap { overflow-x: auto; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .b-moi { background: #dbeafe; color: #1d4ed8; }
+    .b-da_bao_gia { background: #fef3c7; color: #b45309; }
+    .b-dang_chay, .b-cho_chay { background: #ffedd5; color: #c2410c; }
+    .b-hoan_thanh, .b-san_sang { background: #dcfce7; color: #15803d; }
+    .b-huy { background: #fee2e2; color: #b91c1c; }
+    .b-bao_duong { background: #fef3c7; color: #b45309; }
+    .b-owner { background: #ede9fe; color: #6d28d9; }
+    .b-staff { background: #e0f2fe; color: #0369a1; }
+
+    select.mini, input.mini { padding: 7px 9px; border: 1.5px solid var(--border); border-radius: 7px; font-size: 13px; font-family: inherit; outline: none; background: #fff; }
+    select.mini:focus, input.mini:focus { border-color: var(--primary); }
+    .link-btn { background: none; border: none; cursor: pointer; color: var(--primary); font-weight: 600; font-size: 13px; }
+    .link-btn.danger { color: var(--red); }
+
+    /* CHART */
+    .chart { display: flex; align-items: flex-end; gap: 14px; height: 220px; padding: 24px 20px 10px; }
+    .chart .col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 8px; }
+    .chart .bar-val { font-size: 11.5px; font-weight: 700; color: var(--dark); }
+    .chart .bar { width: 100%; max-width: 54px; background: linear-gradient(180deg, var(--primary), #f9a04c); border-radius: 8px 8px 0 0; min-height: 4px; transition: height 0.6s ease; }
+    .chart .bar-lbl { font-size: 12px; color: var(--gray); }
+
+    /* MODAL */
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; align-items: center; justify-content: center; padding: 16px; }
+    .modal-bg.open { display: flex; }
+    .modal { background: #fff; border-radius: 16px; padding: 28px; width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { font-size: 17px; color: var(--dark); margin-bottom: 18px; }
+    .modal label { display: block; font-size: 12.5px; font-weight: 600; margin: 12px 0 5px; }
+    .modal input, .modal select, .modal textarea { width: 100%; padding: 11px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 16px; font-family: inherit; outline: none; }
+    .modal input:focus, .modal select:focus { border-color: var(--primary); }
+    .modal .row { display: flex; gap: 12px; margin-top: 22px; }
+    .modal .row button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; }
+    .btn-save { background: var(--primary); color: #fff; }
+    .btn-cancel { background: var(--light); color: var(--gray); }
+
+    .empty { padding: 40px; text-align: center; color: var(--gray); font-size: 14px; }
+    .view { display: none; animation: fade 0.3s ease; }
+    .view.active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .overlay-mb { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 19; }
+    @media (max-width: 860px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .topbar .hamburger { display: block; }
+      .overlay-mb.show { display: block; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">🚚 Xuân <span>Trường</span></div>
+    <nav>
+      <button class="active" data-view="dashboard" onclick="switchTab(this)"><i class="fas fa-chart-line"></i> Tổng quan</button>
+      <button data-view="bookings" onclick="switchTab(this)"><i class="fas fa-clipboard-list"></i> Đơn đặt xe <span class="dot" id="bookingDot">0</span></button>
+      <button data-view="customers" onclick="switchTab(this)"><i class="fas fa-users"></i> Khách hàng</button>
+      <button data-view="vehicles" onclick="switchTab(this)"><i class="fas fa-truck"></i> Đội xe</button>
+      <button data-view="trips" onclick="switchTab(this)"><i class="fas fa-route"></i> Chuyến xe</button>
+      <button data-view="accounts" id="navAccounts" onclick="switchTab(this)" style="display:none;"><i class="fas fa-user-shield"></i> Tài khoản</button>
+    </nav>
+    <div class="foot">© 2018 Vận tải Xuân Trường</div>
+  </aside>
+  <div class="overlay-mb" id="overlayMb" onclick="toggleSidebar()"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <button class="hamburger" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+        <span class="who">Xin chào, <b id="whoName">...</b> <span class="badge" id="whoRole"></span></span>
+      </div>
+      <div class="t-actions">
+        <button onclick="openChangePass()"><i class="fas fa-key"></i> Đổi mật khẩu</button>
+        <button onclick="logout()"><i class="fas fa-right-from-bracket"></i> Đăng xuất</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- TỔNG QUAN -->
+      <div class="view active" id="view-dashboard">
+        <div class="stats-row" id="statsRow"></div>
+        <div class="panel">
+          <div class="panel-head"><h2><i class="fas fa-chart-column"></i> Doanh thu 6 tháng gần nhất</h2></div>
+          <div class="chart" id="revenueChart"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2><i class="fas fa-clock"></i> Đơn mới nhất</h2></div>
+          <div class="table-wrap"><table id="recentBookings"></table></div>
+        </div>
+      </div>
+
+      <!-- ĐƠN -->
+      <div class="view" id="view-bookings">
+        <div class="panel">
+          <div class="panel-head">
+            <h2><i class="fas fa-clipboard-list"></i> Đơn đặt xe</h2>
+            <button class="btn btn-soft" onclick="exportBookings()"><i class="fas fa-file-excel"></i> Xuất Excel</button>
+          </div>
+          <div class="toolbar">
+            <div class="search"><i class="fas fa-search"></i><input id="bkSearch" placeholder="Tìm tên, SĐT, địa điểm..." oninput="renderBookingsFiltered()" /></div>
+            <select id="bkFilter" onchange="renderBookingsFiltered()">
+              <option value="">Tất cả trạng thái</option>
+              <option value="moi">Mới</option>
+              <option value="da_bao_gia">Đã báo giá</option>
+              <option value="dang_chay">Đang chạy</option>
+              <option value="hoan_thanh">Hoàn thành</option>
+              <option value="huy">Hủy</option>
+            </select>
+          </div>
+          <div class="table-wrap"><table id="bookingsTable"></table></div>
+        </div>
+      </div>
+
+      <!-- KHÁCH -->
+      <div class="view" id="view-customers">
+        <div class="panel">
+          <div class="panel-head"><h2><i class="fas fa-users"></i> Khách hàng</h2></div>
+          <div class="toolbar"><div class="search"><i class="fas fa-search"></i><input id="custSearch" placeholder="Tìm tên, SĐT..." oninput="renderCustomersFiltered()" /></div></div>
+          <div class="table-wrap"><table id="customersTable"></table></div>
+        </div>
+      </div>
+
+      <!-- XE -->
+      <div class="view" id="view-vehicles">
+        <div class="panel">
+          <div class="panel-head">
+            <h2><i class="fas fa-truck"></i> Đội xe</h2>
+            <button class="btn btn-primary" onclick="openVehicleModal()"><i class="fas fa-plus"></i> Thêm xe</button>
+          </div>
+          <div class="table-wrap"><table id="vehiclesTable"></table></div>
+        </div>
+      </div>
+
+      <!-- CHUYẾN -->
+      <div class="view" id="view-trips">
+        <div class="panel">
+          <div class="panel-head">
+            <h2><i class="fas fa-route"></i> Chuyến xe</h2>
+            <button class="btn btn-primary" onclick="openTripModal()"><i class="fas fa-plus"></i> Tạo chuyến</button>
+          </div>
+          <div class="table-wrap"><table id="tripsTable"></table></div>
+        </div>
+      </div>
+
+      <!-- TÀI KHOẢN -->
+      <div class="view" id="view-accounts">
+        <div class="panel">
+          <div class="panel-head">
+            <h2><i class="fas fa-user-shield"></i> Tài khoản quản trị</h2>
+            <button class="btn btn-primary" onclick="openAccountModal()"><i class="fas fa-user-plus"></i> Thêm nhân viên</button>
+          </div>
+          <div class="table-wrap"><table id="accountsTable"></table></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL XE -->
+<div class="modal-bg" id="vehicleModal"><div class="modal">
+  <h3 id="vehicleModalTitle">Thêm xe</h3>
+  <input type="hidden" id="vId" />
+  <label>Tên xe</label><input id="vTen" placeholder="VD: Xe 5 tấn 1" />
+  <label>Biển số</label><input id="vBienSo" placeholder="VD: 61C-123.45" />
+  <label>Loại</label>
+  <select id="vLoai"><option value="mui_bat">Mui bạt</option><option value="thung_kin">Thùng kín</option><option value="dong_lanh">Đông lạnh</option></select>
+  <label>Tải trọng</label><input id="vTaiTrong" placeholder="VD: 5T" />
+  <div class="row"><button class="btn-cancel" onclick="closeModal('vehicleModal')">Hủy</button><button class="btn-save" onclick="saveVehicle()">Lưu</button></div>
+</div></div>
+
+<!-- MODAL CHUYẾN -->
+<div class="modal-bg" id="tripModal"><div class="modal">
+  <h3>Tạo chuyến xe</h3>
+  <label>Đơn đặt xe (tùy chọn)</label><select id="tBooking"><option value="">— Không gắn đơn —</option></select>
+  <label>Xe *</label><select id="tVehicle"></select>
+  <label>Tài xế</label><input id="tTaiXe" placeholder="Tên tài xế" />
+  <label>Ngày khởi hành</label><input id="tNgay" type="date" />
+  <label>Ghi chú</label><textarea id="tGhiChu" rows="2"></textarea>
+  <div class="row"><button class="btn-cancel" onclick="closeModal('tripModal')">Hủy</button><button class="btn-save" onclick="saveTrip()">Tạo chuyến</button></div>
+</div></div>
+
+<!-- MODAL TÀI KHOẢN -->
+<div class="modal-bg" id="accountModal"><div class="modal">
+  <h3>Thêm nhân viên</h3>
+  <label>Họ tên</label><input id="aHoTen" placeholder="VD: Nguyễn Văn B" />
+  <label>Tên đăng nhập</label><input id="aUser" placeholder="VD: nhanvien1" />
+  <label>Mật khẩu (từ 8 ký tự)</label><input id="aPass" type="text" placeholder="Đặt mật khẩu cho nhân viên" />
+  <label>Vai trò</label>
+  <select id="aRole"><option value="staff">Nhân viên (không quản lý tài khoản)</option><option value="owner">Chủ (toàn quyền)</option></select>
+  <div class="row"><button class="btn-cancel" onclick="closeModal('accountModal')">Hủy</button><button class="btn-save" onclick="saveAccount()">Tạo</button></div>
+</div></div>
+
+<!-- MODAL ĐỔI MẬT KHẨU -->
+<div class="modal-bg" id="passModal"><div class="modal">
+  <h3>Đổi mật khẩu</h3>
+  <label>Mật khẩu cũ</label><input id="pOld" type="password" />
+  <label>Mật khẩu mới (từ 8 ký tự)</label><input id="pNew" type="password" />
+  <div class="row"><button class="btn-cancel" onclick="closeModal('passModal')">Hủy</button><button class="btn-save" onclick="changePass()">Đổi</button></div>
+</div></div>
+
+<script>
+const TT_DON = { moi: 'Mới', da_bao_gia: 'Đã báo giá', dang_chay: 'Đang chạy', hoan_thanh: 'Hoàn thành', huy: 'Hủy' };
+const TT_XE = { san_sang: 'Sẵn sàng', dang_chay: 'Đang chạy', bao_duong: 'Bảo dưỡng' };
+const TT_CHUYEN = { cho_chay: 'Chờ chạy', dang_chay: 'Đang chạy', hoan_thanh: 'Hoàn thành', huy: 'Hủy' };
+const LOAI_XE = { mui_bat: 'Mui bạt', thung_kin: 'Thùng kín', dong_lanh: 'Đông lạnh' };
+
+let ME = {};
+let allBookings = [];
+let allCustomers = [];
+
+async function api(url, opts = {}) {
+  const res = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...opts });
+  if (res.status === 401) { location.href = '/admin/login.html'; throw new Error('401'); }
+  return res.json();
+}
+function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtVnd(n) { return n ? Number(n).toLocaleString('vi-VN') + 'đ' : '—'; }
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlayMb').classList.toggle('show');
+}
+
+function switchTab(btn) {
+  document.querySelectorAll('.sidebar nav button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-' + btn.dataset.view).classList.add('active');
+  if (window.innerWidth <= 860) toggleSidebar();
+  load(btn.dataset.view);
+}
+
+/* ===== TỔNG QUAN ===== */
+async function loadDashboard() {
+  const s = await api('/api/stats');
+  document.getElementById('statsRow').innerHTML = `
+    ${statCard('fa-bell', 'var(--blue)', s.don_moi, 'Đơn mới chờ xử lý')}
+    ${statCard('fa-truck-fast', 'var(--amber)', s.don_dang_chay, 'Đơn đang chạy')}
+    ${statCard('fa-circle-check', 'var(--green)', s.xe_san_sang, 'Xe sẵn sàng')}
+    ${statCard('fa-road', 'var(--primary)', s.xe_dang_chay, 'Xe đang chạy')}
+    ${statCard('fa-users', 'var(--dark)', s.tong_khach, 'Tổng khách hàng')}
+    ${statCard('fa-sack-dollar', 'var(--green)', fmtVnd(s.doanh_thu_thang_nay), 'Doanh thu tháng này')}`;
+  renderRevenueChart(await api('/api/stats/revenue'));
+  allBookings = await api('/api/bookings');
+  renderBookings(document.getElementById('recentBookings'), allBookings.slice(0, 5), false);
+}
+function statCard(icon, color, num, lbl) {
+  return `<div class="stat-card"><div class="ic" style="background:${color}"><i class="fas ${icon}"></i></div><div><div class="num">${num}</div><div class="lbl">${lbl}</div></div></div>`;
+}
+function renderRevenueChart(rows) {
+  const el = document.getElementById('revenueChart');
+  if (!rows.length) { el.innerHTML = '<div class="empty" style="margin:auto">Chưa có dữ liệu doanh thu</div>'; return; }
+  const max = Math.max(...rows.map(r => r.doanh_thu), 1);
+  el.innerHTML = rows.map(r => {
+    const h = Math.round((r.doanh_thu / max) * 100);
+    const [y, m] = r.thang.split('-');
+    return `<div class="col">
+      <div class="bar-val">${r.doanh_thu ? (r.doanh_thu/1e6).toFixed(1)+'tr' : '0'}</div>
+      <div class="bar" style="height:${h}%" title="${fmtVnd(r.doanh_thu)} · ${r.so_don} đơn"></div>
+      <div class="bar-lbl">T${parseInt(m)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== ĐƠN ===== */
+async function loadBookings() {
+  allBookings = await api('/api/bookings');
+  markBookingsSeen();
+  renderBookingsFiltered();
+}
+function renderBookingsFiltered() {
+  const q = (document.getElementById('bkSearch').value || '').toLowerCase();
+  const f = document.getElementById('bkFilter').value;
+  let rows = allBookings;
+  if (f) rows = rows.filter(r => r.trang_thai === f);
+  if (q) rows = rows.filter(r => (r.ho_ten + ' ' + r.dien_thoai + ' ' + r.diem_lay_hang + ' ' + r.diem_giao_hang + ' ' + (r.loai_hang||'')).toLowerCase().includes(q));
+  renderBookings(document.getElementById('bookingsTable'), rows, true);
+}
+function renderBookings(table, rows, withValue) {
+  if (!rows.length) { table.innerHTML = '<tr><td class="empty">Chưa có đơn nào — đơn từ form website sẽ hiện ở đây</td></tr>'; return; }
+  table.innerHTML = `<tr><th>#</th><th>Khách</th><th>Tuyến</th><th>Hàng</th>${withValue ? '<th>Giá trị</th>' : ''}<th>Ngày</th><th>Trạng thái</th></tr>` +
+    rows.map(r => `<tr>
+        <td>${r.id}</td>
+        <td><b>${esc(r.ho_ten)}</b><br/><a href="tel:${esc(r.dien_thoai)}">${esc(r.dien_thoai)}</a></td>
+        <td>${esc(r.diem_lay_hang)} → ${esc(r.diem_giao_hang)}</td>
+        <td>${esc(r.loai_hang || '—')}${r.trong_luong ? ' · ' + r.trong_luong + 'T' : ''}${r.ghi_chu ? '<br/><small style="color:#6b7280">' + esc(r.ghi_chu) + '</small>' : ''}</td>
+        ${withValue ? `<td><input class="mini" style="width:110px" type="number" value="${r.gia_tri ?? ''}" placeholder="VNĐ" onchange="updateBookingValue(${r.id}, this.value)" /></td>` : ''}
+        <td><small>${r.created_at}</small></td>
+        <td><select class="mini" onchange="updateBooking(${r.id}, this.value)">
+          ${Object.entries(TT_DON).map(([k, v]) => `<option value="${k}" ${k === r.trang_thai ? 'selected' : ''}>${v}</option>`).join('')}
+        </select></td>
+      </tr>`).join('');
+}
+async function updateBooking(id, trang_thai) { await api('/api/bookings/' + id, { method: 'PUT', body: JSON.stringify({ trang_thai }) }); }
+async function updateBookingValue(id, gia_tri) { await api('/api/bookings/' + id, { method: 'PUT', body: JSON.stringify({ gia_tri }) }); }
+
+function exportBookings() {
+  const cols = ['id','ho_ten','dien_thoai','email','diem_lay_hang','diem_giao_hang','loai_hang','trong_luong','gia_tri','trang_thai','created_at'];
+  const head = ['Mã','Họ tên','Điện thoại','Email','Điểm lấy','Điểm giao','Loại hàng','Trọng lượng','Giá trị','Trạng thái','Ngày tạo'];
+  const lines = [head.join(',')];
+  allBookings.forEach(r => {
+    lines.push(cols.map(c => {
+      let v = r[c] ?? '';
+      if (c === 'trang_thai') v = TT_DON[v] || v;
+      v = String(v).replace(/"/g, '""');
+      return /[",\n]/.test(v) ? `"${v}"` : v;
+    }).join(','));
+  });
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'don-dat-xe-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+/* ===== KHÁCH ===== */
+async function loadCustomers() { allCustomers = await api('/api/customers'); renderCustomersFiltered(); }
+function renderCustomersFiltered() {
+  const q = (document.getElementById('custSearch').value || '').toLowerCase();
+  let rows = allCustomers;
+  if (q) rows = rows.filter(r => (r.ten + ' ' + r.dien_thoai + ' ' + (r.email||'')).toLowerCase().includes(q));
+  const table = document.getElementById('customersTable');
+  if (!rows.length) { table.innerHTML = '<tr><td class="empty">Chưa có khách hàng</td></tr>'; return; }
+  table.innerHTML = `<tr><th>#</th><th>Tên</th><th>SĐT</th><th>Email</th><th>Số đơn</th><th>Đơn gần nhất</th></tr>` +
+    rows.map(r => `<tr><td>${r.id}</td><td><b>${esc(r.ten)}</b></td>
+      <td><a href="tel:${esc(r.dien_thoai)}">${esc(r.dien_thoai)}</a></td>
+      <td>${esc(r.email || '—')}</td><td>${r.so_don}</td><td><small>${r.don_gan_nhat || '—'}</small></td></tr>`).join('');
+}
+
+/* ===== XE ===== */
+async function loadVehicles() {
+  const rows = await api('/api/vehicles');
+  document.getElementById('vehiclesTable').innerHTML =
+    `<tr><th>#</th><th>Tên xe</th><th>Biển số</th><th>Loại</th><th>Tải trọng</th><th>Trạng thái</th><th></th></tr>` +
+    rows.map(r => `<tr><td>${r.id}</td><td><b>${esc(r.ten)}</b></td><td>${esc(r.bien_so)}</td>
+      <td>${LOAI_XE[r.loai] || r.loai || '—'}</td><td>${esc(r.tai_trong || '—')}</td>
+      <td><select class="mini" onchange="updateVehicle(${r.id}, this.value)">
+        ${Object.entries(TT_XE).map(([k, v]) => `<option value="${k}" ${k === r.trang_thai ? 'selected' : ''}>${v}</option>`).join('')}
+      </select></td>
+      <td><button class="link-btn" onclick='editVehicle(${JSON.stringify(r)})'>Sửa</button></td></tr>`).join('');
+}
+function openVehicleModal() {
+  document.getElementById('vehicleModalTitle').textContent = 'Thêm xe';
+  ['vId','vTen','vBienSo','vTaiTrong'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('vLoai').value = 'mui_bat';
+  document.getElementById('vehicleModal').classList.add('open');
+}
+function editVehicle(r) {
+  document.getElementById('vehicleModalTitle').textContent = 'Sửa xe #' + r.id;
+  document.getElementById('vId').value = r.id;
+  document.getElementById('vTen').value = r.ten;
+  document.getElementById('vBienSo').value = r.bien_so;
+  document.getElementById('vLoai').value = r.loai || 'mui_bat';
+  document.getElementById('vTaiTrong').value = r.tai_trong || '';
+  document.getElementById('vehicleModal').classList.add('open');
+}
+async function saveVehicle() {
+  const id = document.getElementById('vId').value;
+  const body = JSON.stringify({
+    ten: document.getElementById('vTen').value, bien_so: document.getElementById('vBienSo').value,
+    loai: document.getElementById('vLoai').value, tai_trong: document.getElementById('vTaiTrong').value
+  });
+  const res = id ? await api('/api/vehicles/' + id, { method: 'PUT', body }) : await api('/api/vehicles', { method: 'POST', body });
+  if (res.error) { alert(res.error); return; }
+  closeModal('vehicleModal'); loadVehicles();
+}
+async function updateVehicle(id, trang_thai) { await api('/api/vehicles/' + id, { method: 'PUT', body: JSON.stringify({ trang_thai }) }); }
+
+/* ===== CHUYẾN ===== */
+async function loadTrips() {
+  const rows = await api('/api/trips');
+  const table = document.getElementById('tripsTable');
+  if (!rows.length) { table.innerHTML = '<tr><td class="empty">Chưa có chuyến nào</td></tr>'; return; }
+  table.innerHTML = `<tr><th>#</th><th>Xe</th><th>Tài xế</th><th>Khách / Tuyến</th><th>Khởi hành</th><th>Trạng thái</th></tr>` +
+    rows.map(r => `<tr><td>${r.id}</td>
+      <td><b>${esc(r.ten_xe || '—')}</b><br/><small>${esc(r.bien_so || '')}</small></td>
+      <td>${esc(r.tai_xe || '—')}</td>
+      <td>${r.khach ? esc(r.khach) + '<br/><small>' + esc(r.diem_lay_hang) + ' → ' + esc(r.diem_giao_hang) + '</small>' : '—'}</td>
+      <td>${r.ngay_khoi_hanh || '—'}</td>
+      <td><select class="mini" onchange="updateTrip(${r.id}, this.value)">
+        ${Object.entries(TT_CHUYEN).map(([k, v]) => `<option value="${k}" ${k === r.trang_thai ? 'selected' : ''}>${v}</option>`).join('')}
+      </select></td></tr>`).join('');
+}
+async function openTripModal() {
+  const [bookings, vehicles] = await Promise.all([api('/api/bookings'), api('/api/vehicles')]);
+  document.getElementById('tBooking').innerHTML = '<option value="">— Không gắn đơn —</option>' +
+    bookings.filter(b => ['moi', 'da_bao_gia'].includes(b.trang_thai))
+      .map(b => `<option value="${b.id}">#${b.id} ${esc(b.ho_ten)}: ${esc(b.diem_lay_hang)} → ${esc(b.diem_giao_hang)}</option>`).join('');
+  document.getElementById('tVehicle').innerHTML =
+    vehicles.filter(v => v.trang_thai === 'san_sang').map(v => `<option value="${v.id}">${esc(v.ten)} (${esc(v.bien_so)})</option>`).join('')
+    || '<option value="">Không còn xe sẵn sàng</option>';
+  document.getElementById('tripModal').classList.add('open');
+}
+async function saveTrip() {
+  const vehicle_id = document.getElementById('tVehicle').value;
+  if (!vehicle_id) { alert('Cần chọn xe'); return; }
+  const res = await api('/api/trips', { method: 'POST', body: JSON.stringify({
+    booking_id: document.getElementById('tBooking').value || null, vehicle_id,
+    tai_xe: document.getElementById('tTaiXe').value, ngay_khoi_hanh: document.getElementById('tNgay').value,
+    ghi_chu: document.getElementById('tGhiChu').value
+  })});
+  if (res.error) { alert(res.error); return; }
+  closeModal('tripModal'); loadTrips();
+}
+async function updateTrip(id, trang_thai) { await api('/api/trips/' + id, { method: 'PUT', body: JSON.stringify({ trang_thai }) }); loadTrips(); }
+
+/* ===== TÀI KHOẢN (chỉ owner) ===== */
+async function loadAccounts() {
+  const rows = await api('/api/admins');
+  document.getElementById('accountsTable').innerHTML =
+    `<tr><th>#</th><th>Họ tên</th><th>Tên đăng nhập</th><th>Vai trò</th><th>Tạo lúc</th><th></th></tr>` +
+    rows.map(r => `<tr><td>${r.id}</td><td><b>${esc(r.ho_ten || '—')}</b></td><td>${esc(r.username)}</td>
+      <td><span class="badge b-${r.role}">${r.role === 'owner' ? 'Chủ' : 'Nhân viên'}</span></td>
+      <td><small>${r.created_at || '—'}</small></td>
+      <td>${r.id === ME.id ? '<small style="color:#6b7280">(bạn)</small>' : `<button class="link-btn danger" onclick="deleteAccount(${r.id}, '${esc(r.username)}')">Xóa</button>`}</td></tr>`).join('');
+}
+function openAccountModal() {
+  ['aHoTen','aUser','aPass'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('aRole').value = 'staff';
+  document.getElementById('accountModal').classList.add('open');
+}
+async function saveAccount() {
+  const res = await api('/api/admins', { method: 'POST', body: JSON.stringify({
+    ho_ten: document.getElementById('aHoTen').value, username: document.getElementById('aUser').value,
+    password: document.getElementById('aPass').value, role: document.getElementById('aRole').value
+  })});
+  if (res.error) { alert(res.error); return; }
+  closeModal('accountModal'); loadAccounts();
+}
+async function deleteAccount(id, name) {
+  if (!confirm('Xóa tài khoản "' + name + '"?')) return;
+  const res = await api('/api/admins/' + id, { method: 'DELETE' });
+  if (res.error) { alert(res.error); return; }
+  loadAccounts();
+}
+
+/* ===== ĐỔI MẬT KHẨU ===== */
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openChangePass() { document.getElementById('passModal').classList.add('open'); }
+async function changePass() {
+  const res = await api('/api/change-password', { method: 'POST', body: JSON.stringify({
+    oldPassword: document.getElementById('pOld').value, newPassword: document.getElementById('pNew').value
+  })});
+  if (res.error) { alert(res.error); return; }
+  alert('Đã đổi mật khẩu!'); closeModal('passModal');
+  document.getElementById('pOld').value = ''; document.getElementById('pNew').value = '';
+}
+async function logout() { await api('/api/logout', { method: 'POST' }); location.href = '/admin/login.html'; }
+
+/* ===== THÔNG BÁO ĐƠN MỚI ===== */
+function getLastSeen() { return Number(localStorage.getItem('lastSeenBookingId') || 0); }
+function markBookingsSeen() {
+  if (allBookings.length) localStorage.setItem('lastSeenBookingId', Math.max(...allBookings.map(b => b.id)));
+  document.getElementById('bookingDot').classList.remove('show');
+}
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = 'sine'; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.15, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    o.start(); o.stop(ctx.currentTime + 0.4);
+  } catch (e) {}
+}
+async function checkNewOrders() {
+  try {
+    const rows = await api('/api/bookings');
+    const lastSeen = getLastSeen();
+    const newCount = rows.filter(b => b.id > lastSeen).length;
+    const dot = document.getElementById('bookingDot');
+    if (newCount > 0) {
+      dot.textContent = newCount; dot.classList.add('show');
+      if (newCount > (window._lastNewCount || 0)) beep();
+      window._lastNewCount = newCount;
+    }
+  } catch (e) {}
+}
+
+function load(view) {
+  ({ dashboard: loadDashboard, bookings: loadBookings, customers: loadCustomers,
+     vehicles: loadVehicles, trips: loadTrips, accounts: loadAccounts }[view] || (()=>{}))();
+}
+
+// Khởi động
+api('/api/me').then(r => {
+  if (!r.loggedIn) { location.href = '/admin/login.html'; return; }
+  ME = r;
+  document.getElementById('whoName').textContent = r.ho_ten || r.username;
+  const roleEl = document.getElementById('whoRole');
+  roleEl.textContent = r.role === 'owner' ? 'Chủ' : 'Nhân viên';
+  roleEl.className = 'badge b-' + r.role;
+  if (r.role === 'owner') document.getElementById('navAccounts').style.display = 'flex';
+  loadDashboard();
+  checkNewOrders();
+  setInterval(checkNewOrders, 25000); // kiểm tra đơn mới mỗi 25 giây
+});
+</script>
+</body>
+</html>
