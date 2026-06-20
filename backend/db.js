@@ -7,7 +7,15 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false }
+  ssl: process.env.DB_SSL === 'false' ? false : { rejectUnauthorized: false },
+  connectionTimeoutMillis: 10000
+});
+
+// DB cloud (Supabase) tu dong dong cac ket noi idle -> pg phat su kien 'error'
+// tren client trong pool. Khong co listener thi Node coi la loi chua bat va lam
+// CRASH ca server. Bat o day de pool tu tao lai ket noi, server khong sap.
+pool.on('error', (err) => {
+  console.error('Canh bao: ket noi DB idle bi dong (da bo qua, pool se tu tao lai):', err.message);
 });
 
 async function query(text, params = []) {
