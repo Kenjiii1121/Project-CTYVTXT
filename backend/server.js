@@ -123,6 +123,43 @@ function requireAuth(req, res, next) {
   res.status(401).json({ error: 'Chua dang nhap' });
 }
 
+function cleanText(value) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeBookingInput(body = {}) {
+  const trongLuong = body.trong_luong === undefined || body.trong_luong === ''
+    ? null
+    : Number(body.trong_luong);
+
+  return {
+    ho_ten: cleanText(body.ho_ten),
+    dien_thoai: cleanText(body.dien_thoai),
+    email: cleanText(body.email),
+    diem_lay_hang: cleanText(body.diem_lay_hang),
+    diem_giao_hang: cleanText(body.diem_giao_hang),
+    loai_hang: cleanText(body.loai_hang),
+    trong_luong: trongLuong,
+    ghi_chu: cleanText(body.ghi_chu)
+  };
+}
+
+function validateBookingInput(b) {
+  if (!b.ho_ten || !b.dien_thoai || !b.diem_lay_hang || !b.diem_giao_hang) {
+    return 'Thieu thong tin bat buoc';
+  }
+  if (!/^[0-9+\-\s().]{8,20}$/.test(b.dien_thoai)) {
+    return 'So dien thoai khong hop le';
+  }
+  if (b.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)) {
+    return 'Email khong hop le';
+  }
+  if (b.trong_luong !== null && (!Number.isFinite(b.trong_luong) || b.trong_luong <= 0)) {
+    return 'Trong luong phai lon hon 0';
+  }
+  return null;
+}
+
 const requireOwner = asyncHandler(async (req, res, next) => {
   if (!req.session || !req.session.adminId) return res.status(401).json({ error: 'Chua dang nhap' });
   const admin = await get('SELECT role FROM admins WHERE id = $1', [req.session.adminId]);
@@ -169,10 +206,9 @@ app.post('/api/change-password', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 app.post('/api/bookings', bookingLimiter, asyncHandler(async (req, res) => {
-  const b = req.body || {};
-  if (!b.ho_ten || !b.dien_thoai || !b.diem_lay_hang || !b.diem_giao_hang) {
-    return res.status(400).json({ error: 'Thieu thong tin bat buoc' });
-  }
+  const b = normalizeBookingInput(req.body);
+  const validationError = validateBookingInput(b);
+  if (validationError) return res.status(400).json({ error: validationError });
 
   const id = await withTransaction(async (client) => {
     let customer = (await client.query('SELECT * FROM customers WHERE dien_thoai = $1', [b.dien_thoai])).rows[0];
@@ -196,7 +232,7 @@ app.post('/api/bookings', bookingLimiter, asyncHandler(async (req, res) => {
       b.diem_lay_hang,
       b.diem_giao_hang,
       b.loai_hang || null,
-      b.trong_luong || null,
+      b.trong_luong,
       b.ghi_chu || null
     ]);
     return Number(insertedBooking.rows[0].id);
@@ -304,6 +340,18 @@ app.post('/api/trips', requireAuth, asyncHandler(async (req, res) => {
   if (!vehicle_id) return res.status(400).json({ error: 'Can chon xe' });
 
   const id = await withTransaction(async (client) => {
+    const vehicle = (await client.query('SELECT trang_thai FROM vehicles WHERE id = $1 FOR UPDATE', [vehicle_id])).rows[0];
+    if (!vehicle) {
+      const error = new Error('Khong tim thay xe');
+      error.status = 404;
+      throw error;
+    }
+    if (vehicle.trang_thai !== 'san_sang') {
+      const error = new Error('Xe dang ban, vui long chon xe khac');
+      error.status = 400;
+      throw error;
+    }
+
     const inserted = await client.query(
       'INSERT INTO trips (booking_id, vehicle_id, tai_xe, ngay_khoi_hanh, ghi_chu) VALUES ($1, $2, $3, $4, $5) RETURNING id',
       [booking_id || null, vehicle_id, tai_xe || null, ngay_khoi_hanh || null, ghi_chu || null]
@@ -406,8 +454,8 @@ app.delete('/api/admins/:id', requireOwner, asyncHandler(async (req, res) => {
 }));
 
 app.use((error, req, res, next) => {
-  console.error(error);
-  res.status(500).json({ error: 'Loi server' });
+  if (!error.status || error.status >= 500) console.error(error);
+  res.status(error.status || 500).json({ error: error.status ? error.message : 'Loi server' });
 });
 
 initDb()
