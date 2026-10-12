@@ -1,0 +1,43 @@
+name: Java V2 CI
+
+on:
+  pull_request:
+    paths:
+      - "backend-v2/**"
+      - "backend/admin/**"
+      - "css/**"
+      - "js/**"
+      - "images/**"
+      - "*.html"
+      - "render.yaml"
+      - ".github/workflows/java-v2.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend-v2/**"
+      - "backend/admin/**"
+      - "css/**"
+      - "js/**"
+      - "images/**"
+      - "*.html"
+      - "render.yaml"
+      - ".github/workflows/java-v2.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Run Java tests
+        working-directory: backend-v2
+        run: mvn --batch-mode verify
+      - name: Build production image
+        run: docker build --file backend-v2/Dockerfile --tag project-ctyvtxt-v2:ci .

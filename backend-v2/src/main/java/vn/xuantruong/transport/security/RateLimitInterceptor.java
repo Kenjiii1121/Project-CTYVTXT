@@ -32,6 +32,9 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         if (limit == null) return true;
 
         long now = clock.millis();
+        if (windows.size() > 1_000) {
+            windows.entrySet().removeIf(entry -> now - entry.getValue().startedAt >= 60 * 60_000L);
+        }
         String key = path + ":" + clientIp(request);
         Window window = windows.compute(key, (ignored, current) -> {
             if (current == null || now - current.startedAt >= limit.windowMs) return new Window(now, 1);
@@ -47,8 +50,6 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     }
 
     private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) return forwarded.split(",", 2)[0].trim();
         return request.getRemoteAddr();
     }
 

@@ -21,6 +21,7 @@ Use Java 21 and Maven 3.9+:
 
 ```powershell
 $env:APP_FORCE_H2='true'
+$env:ADMIN_INITIAL_PASSWORD='replace-with-at-least-12-characters'
 mvn spring-boot:run
 ```
 
@@ -31,13 +32,13 @@ Open:
 - Health: `http://localhost:3001/healthz`
 
 `APP_FORCE_H2` prevents the imported V1 `.env` from selecting the real database.
-H2 is memory-only. Restarting the app clears demo data. The default demo admin
-is created only when the database has no admins; change that password after the
-first login.
+H2 is memory-only. Restarting the app clears demo data. An initial admin is
+created only when the database has no admins and `ADMIN_INITIAL_PASSWORD` has at
+least 12 characters. Change that password after the first login.
 
 ## PostgreSQL/Supabase
 
-Copy `.env.example` to `.env` and set `DATABASE_URL` and `SESSION_SECRET`. V2
+Copy `.env.example` to `.env` and set `DATABASE_URL`. V2
 also reads `../backend/.env` for local compatibility with V1. Do not commit real
 credentials.
 
@@ -50,7 +51,7 @@ its own `SPRING_SESSION` tables.
 ```powershell
 mvn test
 mvn package
-java -jar target/transport-backend-v2-2.0.0-SNAPSHOT.jar
+java -jar target/transport-backend-v2-2.0.1.jar
 ```
 
 V2 defaults to port `3001`, leaving V1 on `3000`. Set `PORT=3000` only when V1
@@ -66,3 +67,15 @@ is stopped.
 The implementation includes database transactions for booking and trip state
 changes, session authentication, owner-only account management, security
 headers, CORS allow-listing and simple per-IP rate limiting.
+
+## Docker and Render
+
+The Docker build context must be the repository root so the image can include
+the public website and `backend/admin` assets:
+
+```powershell
+docker build -f backend-v2/Dockerfile -t project-ctyvtxt-v2 .
+```
+
+`render.yaml` uses this Dockerfile, waits for GitHub CI checks, and verifies
+`/healthz`. The endpoint reports unhealthy when PostgreSQL is unavailable.

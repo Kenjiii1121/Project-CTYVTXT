@@ -1,15 +1,19 @@
 package vn.xuantruong.transport.service;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Component
 public class DatabaseInitializer implements ApplicationRunner {
+    private static final Logger log = LoggerFactory.getLogger(DatabaseInitializer.class);
     private final JdbcTemplate jdbc;
     private final PasswordService passwords;
     private final Environment environment;
@@ -99,11 +103,21 @@ public class DatabaseInitializer implements ApplicationRunner {
 
     private void seedAdmin() {
         Long count = jdbc.queryForObject("SELECT COUNT(*) FROM admins", Long.class);
-        if (count != null && count == 0) {
-            String salt = passwords.newSalt();
-            jdbc.update("INSERT INTO admins (username, password_hash, salt, ho_ten, role) VALUES (?, ?, ?, ?, 'owner')",
-                    "admin", passwords.hash("xuantruong123", salt), salt, "Quan tri vien");
+        if (count != null && count > 0) return;
+
+        String initialPassword = environment.getProperty("ADMIN_INITIAL_PASSWORD");
+        if (!StringUtils.hasText(initialPassword) || initialPassword.length() < 12) {
+            throw new IllegalStateException(
+                    "Database chua co admin. Hay dat ADMIN_INITIAL_PASSWORD tu 12 ky tu truoc khi khoi dong.");
         }
+        String username = environment.getProperty("ADMIN_INITIAL_USERNAME", "admin").trim();
+        String displayName = environment.getProperty("ADMIN_INITIAL_NAME", "Quan tri vien").trim();
+        if (!StringUtils.hasText(username)) throw new IllegalStateException("ADMIN_INITIAL_USERNAME khong duoc de trong");
+
+        String salt = passwords.newSalt();
+        jdbc.update("INSERT INTO admins (username, password_hash, salt, ho_ten, role) VALUES (?, ?, ?, ?, 'owner')",
+                username, passwords.hash(initialPassword, salt), salt, displayName);
+        log.warn("Da tao admin khoi tao '{}'. Hay doi mat khau ngay sau lan dang nhap dau tien.", username);
     }
 
     private void seedVehicles() {

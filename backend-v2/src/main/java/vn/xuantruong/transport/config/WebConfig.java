@@ -2,9 +2,11 @@ package vn.xuantruong.transport.config;
 
 import java.nio.file.Path;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.util.StringUtils;
 import vn.xuantruong.transport.security.ApiAuthInterceptor;
 import vn.xuantruong.transport.security.RateLimitInterceptor;
 
@@ -12,10 +14,12 @@ import vn.xuantruong.transport.security.RateLimitInterceptor;
 public class WebConfig implements WebMvcConfigurer {
     private final ApiAuthInterceptor authInterceptor;
     private final RateLimitInterceptor rateLimitInterceptor;
+    private final Environment environment;
 
-    public WebConfig(ApiAuthInterceptor authInterceptor, RateLimitInterceptor rateLimitInterceptor) {
+    public WebConfig(ApiAuthInterceptor authInterceptor, RateLimitInterceptor rateLimitInterceptor, Environment environment) {
         this.authInterceptor = authInterceptor;
         this.rateLimitInterceptor = rateLimitInterceptor;
+        this.environment = environment;
     }
 
     @Override
@@ -26,15 +30,27 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String projectRoot = Path.of("..").toAbsolutePath().normalize().toUri().toString();
-        String adminRoot = Path.of("..", "backend", "admin").toAbsolutePath().normalize().toUri().toString();
+        Path projectPath = Path.of(pathProperty("APP_SITE_ROOT", "..")).toAbsolutePath().normalize();
+        Path adminPath = Path.of(pathProperty("APP_ADMIN_ROOT", "../backend/admin")).toAbsolutePath().normalize();
+        String projectRoot = location(projectPath);
+        String adminRoot = location(adminPath);
         registry.addResourceHandler("/", "/*.html").addResourceLocations(projectRoot);
         registry.addResourceHandler("/css/**")
-                .addResourceLocations(Path.of("..", "css").toAbsolutePath().normalize().toUri().toString());
+                .addResourceLocations(location(projectPath.resolve("css")));
         registry.addResourceHandler("/js/**")
-                .addResourceLocations(Path.of("..", "js").toAbsolutePath().normalize().toUri().toString());
+                .addResourceLocations(location(projectPath.resolve("js")));
         registry.addResourceHandler("/images/**")
-                .addResourceLocations(Path.of("..", "images").toAbsolutePath().normalize().toUri().toString());
+                .addResourceLocations(location(projectPath.resolve("images")));
         registry.addResourceHandler("/admin/**").addResourceLocations(adminRoot);
+    }
+
+    private String location(Path path) {
+        String uri = path.toUri().toString();
+        return uri.endsWith("/") ? uri : uri + "/";
+    }
+
+    private String pathProperty(String name, String fallback) {
+        String value = environment.getProperty(name);
+        return StringUtils.hasText(value) ? value : fallback;
     }
 }

@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,8 +31,19 @@ public class ApiController {
     }
 
     @GetMapping("/healthz")
-    Map<String, Object> health() {
-        return Map.of("ok", true, "version", "2.0.0", "uptime", ManagementFactory.getRuntimeMXBean().getUptime() / 1000.0);
+    ResponseEntity<Map<String, Object>> health() {
+        boolean databaseOk;
+        try {
+            databaseOk = service.isDatabaseHealthy();
+        } catch (RuntimeException error) {
+            databaseOk = false;
+        }
+        Map<String, Object> body = Map.of(
+                "ok", databaseOk,
+                "database", databaseOk ? "up" : "down",
+                "version", "2.0.1",
+                "uptime", ManagementFactory.getRuntimeMXBean().getUptime() / 1000.0);
+        return ResponseEntity.status(databaseOk ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).body(body);
     }
 
     @PostMapping("/api/login")
