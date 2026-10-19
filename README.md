@@ -61,3 +61,16 @@ Integration test kiểm tra health check, authentication, booking validation, se
 Các biến email là tùy chọn. Không commit `.env`, database credential hay password vào repository.
 
 Xem thêm tại [`backend-v2/README.md`](backend-v2/README.md).
+## Deployment
+
+### V1 — Production / Interview Demo
+- Backend: Node.js, Express
+- Database: PostgreSQL (Supabase)
+- Hosting: Render
+- Live Demo: https://project-ctyvtxt.onrender.com
+
+### V2 — Development / Extended Version
+- Backend: Java, Spring Boot
+- Status: Separate development version
+
+The production deployment currently uses V1.
